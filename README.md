@@ -23,10 +23,19 @@
 
 ---
 
+## 🚀 Rolling 5-Year Data & Auto-Update
+
+- **All dashboards and analytics** now display data for the last 5 years (rolling window), automatically updating as time progresses.
+- **Backend API** endpoints return only the last 5 years of fund performance and analytics data by default.
+- **Automated daily updates**: The backend runs a scheduled job every day to ingest and update the latest fund data, ensuring the dashboard is always current.
+- **Frontend auto-refresh**: Dashboard and fund details pages automatically refresh their data every 24 hours to reflect the latest updates.
+
+---
+
 ## 🛠️ How It Works
-1. **Automated Data Ingestion**: Python scripts scrape, process, and store MMF data from fund manager sites, CBK, and CMA.
-2. **Backend API**: Node.js/Express with TypeORM exposes REST endpoints for funds, performance, analytics, and more.
-3. **Frontend**: React + Tailwind CSS dashboard fetches and visualizes data, with interactive charts and tables.
+1. **Automated Data Ingestion**: Python scripts scrape, process, and store MMF data from fund manager sites, CBK, and CMA. **A daily cron job ensures the database is always up-to-date.**
+2. **Backend API**: Node.js/Express with TypeORM exposes REST endpoints for funds, performance, analytics, and more. **All endpoints now serve a rolling 5-year window of data.**
+3. **Frontend**: React + Tailwind CSS dashboard fetches and visualizes data, with interactive charts and tables. **All dashboards and analytics auto-refresh every 24 hours and show only the last 5 years of data.**
 4. **Database**: PostgreSQL stores all fund, performance, and user data. Redis is used for caching.
 5. **Deployment**: Docker Compose and AWS templates for production.
 
@@ -127,6 +136,8 @@ cd PLP\ Final\ Project
 
 ## 🗂️ Key Features
 - Real-time MMF data and analytics
+- **Rolling 5-year window for all analytics and dashboards**
+- **Daily auto-update of fund data**
 - Fund manager directory with links
 - Regulatory resources (CBK, CMA)
 - Blog, FAQ, and educational content
@@ -138,9 +149,9 @@ cd PLP\ Final\ Project
 
 ## 📚 API Endpoints (Examples)
 - `GET /api/funds` — List all funds
-- `GET /api/fund-performances` — All performance data
-- `GET /api/analytics/best-performing` — Top funds
-- `GET /api/analytics/trends` — Performance trends
+- `GET /api/fund-performances` — All performance data (last 5 years by default)
+- `GET /api/analytics/best-performing` — Top funds (last 5 years)
+- `GET /api/analytics/trends` — Performance trends (last 5 years)
 
 ---
 

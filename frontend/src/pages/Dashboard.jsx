@@ -15,6 +15,9 @@ const Dashboard = () => {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
+      const to = new Date();
+      const from = new Date();
+      from.setFullYear(to.getFullYear() - 5);
       const res = await getFunds();
       setFunds(res.data);
       // Fetch statistics for each fund
@@ -22,7 +25,7 @@ const Dashboard = () => {
       await Promise.all(
         res.data.map(async (fund) => {
           try {
-            const statRes = await getFundStatistics(fund.id);
+            const statRes = await getFundStatistics(fund.id, from.toISOString().slice(0,10), to.toISOString().slice(0,10));
             statsObj[fund.id] = statRes.data;
           } catch {
             statsObj[fund.id] = { averageNav: "-", averageYield: "-" };
@@ -33,16 +36,21 @@ const Dashboard = () => {
       setLoading(false);
     }
     fetchData();
+    const interval = setInterval(fetchData, 24 * 60 * 60 * 1000); // Refresh every 24 hours
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     async function fetchAnalytics() {
       setAnalyticsLoading(true);
+      const to = new Date();
+      const from = new Date();
+      from.setFullYear(to.getFullYear() - 5);
       const [best, worst, volatility, trends] = await Promise.all([
-        getBestPerformingFund(),
-        getWorstPerformingFund(),
-        getFundVolatility(),
-        getFundTrends()
+        getBestPerformingFund(from, to),
+        getWorstPerformingFund(from, to),
+        getFundVolatility(from, to),
+        getFundTrends(from, to)
       ]);
       setAnalytics({
         best: best.data,
@@ -53,6 +61,8 @@ const Dashboard = () => {
       setAnalyticsLoading(false);
     }
     fetchAnalytics();
+    const interval = setInterval(fetchAnalytics, 24 * 60 * 60 * 1000); // Refresh every 24 hours
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) return (

@@ -2,12 +2,25 @@ import { Router } from "express";
 import { AppDataSource } from "../data-source";
 import { FundPerformance } from "../models/FundPerformance";
 import { Fund } from "../models/Fund";
+import { Between } from "typeorm";
 
 const router = Router();
 
-// Get all fund performances
+// Get all fund performances (last 5 years by default)
 router.get("/", async (req, res) => {
-  const performances = await AppDataSource.manager.find(FundPerformance, { relations: ["fund"] });
+  let { from, to } = req.query;
+  const now = new Date();
+  const fiveYearsAgo = new Date();
+  fiveYearsAgo.setFullYear(now.getFullYear() - 5);
+  if (!from) from = fiveYearsAgo.toISOString().slice(0, 10);
+  if (!to) to = now.toISOString().slice(0, 10);
+  const performances = await AppDataSource.getRepository(FundPerformance).find({
+    where: {
+      date: Between(new Date(from as string), new Date(to as string)),
+    },
+    relations: ["fund"],
+    order: { date: "ASC" },
+  });
   res.json(performances);
 });
 
@@ -60,9 +73,14 @@ router.delete("/:id", async (req, res) => {
   res.status(204).send();
 });
 
-// Filtering, sorting, and pagination for fund performances
+// Filtering, sorting, and pagination for fund performances (default to last 5 years)
 router.get("/search", async (req, res) => {
-  const { fundId, startDate, endDate, sortBy = "date", order = "ASC", page = 1, limit = 10 } = req.query;
+  let { fundId, startDate, endDate, sortBy = "date", order = "ASC", page = 1, limit = 10 } = req.query;
+  const now = new Date();
+  const fiveYearsAgo = new Date();
+  fiveYearsAgo.setFullYear(now.getFullYear() - 5);
+  if (!startDate) startDate = fiveYearsAgo.toISOString().slice(0, 10);
+  if (!endDate) endDate = now.toISOString().slice(0, 10);
   const qb = AppDataSource.getRepository(FundPerformance).createQueryBuilder("perf");
   if (fundId) qb.andWhere("perf.fundId = :fundId", { fundId: Number(fundId) });
   if (startDate) qb.andWhere("perf.date >= :startDate", { startDate });

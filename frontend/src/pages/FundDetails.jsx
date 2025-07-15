@@ -13,10 +13,13 @@ const FundDetails = () => {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
+      const to = new Date();
+      const from = new Date();
+      from.setFullYear(to.getFullYear() - 5);
       const [fundRes, statsRes, perfRes] = await Promise.all([
         getFund(id),
-        getFundStatistics(id),
-        getFundPerformances({ fundId: id })
+        getFundStatistics(id, from.toISOString().slice(0,10), to.toISOString().slice(0,10)),
+        getFundPerformances({ fundId: id, startDate: from.toISOString().slice(0,10), endDate: to.toISOString().slice(0,10) })
       ]);
       setFund(fundRes.data);
       setStats(statsRes.data);
@@ -24,6 +27,8 @@ const FundDetails = () => {
       setLoading(false);
     }
     fetchData();
+    const interval = setInterval(fetchData, 24 * 60 * 60 * 1000); // Refresh every 24 hours
+    return () => clearInterval(interval);
   }, [id]);
 
   if (loading) return <div className="p-8 text-center">Loading fund details...</div>;
